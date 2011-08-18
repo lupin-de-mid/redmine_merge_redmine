@@ -6,7 +6,7 @@ class SourceJournalDetail < ActiveRecord::Base
   
   def self.migrate
     all.each do |source_journal_detail|
-
+      puts "- Migrating journal detail ##{source_journal_detail.id}..."
       JournalDetail.create!(source_journal_detail.attributes) do |jd|
         jd.journal = Journal.find(RedmineMerge::Mapper.get_new_journal_id(source_journal_detail.journal_id))
 

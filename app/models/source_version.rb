@@ -4,8 +4,10 @@ class SourceVersion < ActiveRecord::Base
 
   def self.migrate
     all.each do |source_version|
+      puts "- Migrating version ##{source_version.id}"
       version = Version.create!(source_version.attributes) do |v|
-        v.project = Project.find(RedmineMerge::Mapper.get_new_project_id(source_version.project_id))
+        projectId = RedmineMerge::Mapper.get_new_project_id(source_version.project_id)
+        v.project = Project.find(projectId) if !projectId.nil?
       end
 
       RedmineMerge::Mapper.add_version(source_version.id, version.id)
