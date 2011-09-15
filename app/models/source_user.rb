@@ -15,6 +15,7 @@ class SourceUser < ActiveRecord::Base
           u.login = source_user.login
           u.admin = source_user.admin
           u.hashed_password = source_user.hashed_password
+          u.salt = source_user.salt
         end
         puts "-- Not found, created"
       end

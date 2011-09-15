@@ -16,12 +16,12 @@ class SourceProject < ActiveRecord::Base
           if source_project.enabled_modules
             p.enabled_module_names = source_project.enabled_modules.collect(&:name)
           end
+          p.trackers = []
 
-          if source_project.trackers
-            source_project.trackers.each do |source_tracker|
-              merged_tracker = Tracker.find_by_name(source_tracker.name)
-              p.trackers << merged_tracker if merged_tracker and not p.trackers.include?(merged_tracker)
-            end
+          source_project.trackers.each do |source_tracker|
+            merged_tracker = Tracker.find_by_name(source_tracker.name)
+            p.trackers << merged_tracker if merged_tracker
+            puts "added tracker #{merged_tracker.name}" if merged_tracker
           end
         end
 

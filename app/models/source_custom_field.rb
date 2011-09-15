@@ -7,6 +7,7 @@ class SourceCustomField < ActiveRecord::Base
       next if CustomField.find_by_name(source_custom_field.name)
 
       CustomField.create!(source_custom_field.attributes)
+      puts "..migrated #{source_custom_field.name}"
     end
   end
 end
