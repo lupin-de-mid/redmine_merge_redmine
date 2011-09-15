@@ -10,7 +10,7 @@ class SourceIssue < ActiveRecord::Base
   belongs_to :priority, :class_name => 'SourceEnumeration', :foreign_key => 'priority_id'
   belongs_to :category, :class_name => 'SourceIssueCategory', :foreign_key => 'category_id'
   belongs_to :fixed_version, :class_name => 'SourceVersion', :foreign_key => 'fixed_version_id'
-  
+
   def self.migrate
 
     count = all.count
@@ -25,29 +25,18 @@ class SourceIssue < ActiveRecord::Base
       dt = (Time.now.seconds_since_midnight - start).to_i
       eta = (dt*100/x - dt).to_i
       puts "..[issues][#{x.round 4}%][ETA: #{eta/60}m #{eta.modulo 60}s]"
-      
+
       puts "- Migrating issue ##{source_issue.id}: #{source_issue.subject}"
       next if source_issue.project.nil?
       issue = Issue.create!(source_issue.attributes) do |i|
-        p = Project.find_by_name(source_issue.project.name) 
-        i.project = p
-        puts "-- Set project #{i.project.name}"
-        i.author = User.find(RedmineMerge::Mapper.get_new_user_id(source_issue.author.id))
-        puts "-- Set author #{i.author}"
-        i.assigned_to = User.find(RedmineMerge::Mapper.get_new_user_id(source_issue.assigned_to.id)) if source_issue.assigned_to
-        puts "-- Set assignee #{i.assigned_to}"
-        i.status = IssueStatus.find_by_name(source_issue.status.name)
-        puts "-- Set issue status #{i.status}"
-        t = Tracker.find_by_name(source_issue.tracker.name)
-        # if someone messed with project trackers there be monsters!
-        unless p.trackers.include? t
-          p.trackers << t
-          p.save!
-          puts "fixed tracker #{t} for project #{p.name}"
-        end
-        i.tracker = t
-        puts "-- Set tracker #{i.tracker}"
 
+        i.project = Project.find_by_name(source_issue.project.name)
+        i.author = User.find(RedmineMerge::Mapper.get_new_user_id(source_issue.author.id)) if i.author.blank?
+
+        i.assigned_to = User.find(RedmineMerge::Mapper.get_new_user_id(source_issue.assigned_to.id)) if source_issue.assigned_to
+        i.status = IssueStatus.find_by_name(source_issue.status.name)
+        i.tracker = Tracker.find_by_name(source_issue.tracker.name)
+        i.fixed_version_id = RedmineMerge::Mapper.get_new_version_id(source_issue.fixed_version_id)
 
         i.priority = IssuePriority.find_by_name(source_issue.priority.name)
         puts "-- Set issue priority #{i.priority}"
@@ -59,7 +48,7 @@ class SourceIssue < ActiveRecord::Base
           puts "-- Set fixed version #{i.fixed_version}"
         end
       end
-      
+
       RedmineMerge::Mapper.add_issue(source_issue.id, issue.id)
     end
   end
