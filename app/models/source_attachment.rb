@@ -10,11 +10,12 @@ class SourceAttachment < ActiveRecord::Base
 
     Setting.establish_connection :production
     s_prod = Setting.find_by_name "attachment_max_size"
-
-    if s_source.value > s_prod.value
-      s_prod.value = s_source.value
-      s_prod.save!
-      puts ".. increased max attachment size on production database!"
+    unless s_source || s_prod
+      if  s_source.value > s_prod.value
+        s_prod.value = s_source.value
+        s_prod.save!
+        puts ".. increased max attachment size on production database!"
+      end
     end
 
     all.each do |source_attachment|

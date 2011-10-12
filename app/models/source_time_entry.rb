@@ -20,10 +20,6 @@ class SourceTimeEntry < ActiveRecord::Base
       x = 100*i/count
       puts "..[#{x}%] #{source_time_entry.id} "
       
-      if skip.include? source_time_entry.id
-        next
-      end
-
       TimeEntry.create!(source_time_entry.attributes) do |te|
         te.user = User.find(RedmineMerge::Mapper.get_new_user_id(source_time_entry.user.id))
         te.project = Project.find_by_name(source_time_entry.project.name)
